@@ -1,385 +1,481 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Quiz Radios Françaises - Cartes Révélatrices</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap');
-    body {
-      font-family: 'Inter', Arial, sans-serif;
-      background: linear-gradient(-45deg, #ffe7ba 0%, #b5ead7 50%, #c7ceea 100%);
-      min-height: 100vh;
-      margin: 0;
-      padding: 2rem 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    h1 {
-      color: #5f27cd;
-      margin-bottom: 0.5rem;
-      letter-spacing: 1px;
-      text-shadow: 0 2px 8px #fff8;
-    }
-    #scoreboard {
-      color: #222;
-      font-size: 1.2rem;
-      font-weight: bold;
-      margin-bottom: 2rem;
-      background: #fff3;
-      padding: 0.5em 1.5em;
-      border-radius: 1em;
-      box-shadow: 0 2px 8px #fff7;
-    }
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-      gap: 2rem;
-      width: 95vw;
-      max-width: 1100px;
-      margin-bottom: 2rem;
-    }
-    .card {
-      background: linear-gradient(135deg, #f9f7f7 60%, #b5ead7 100%);
-      border-radius: 1.2em;
-      box-shadow: 0 2px 16px #b5ead7cc;
-      padding: 2em 1.2em 1.5em 1.2em;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      transition: transform 0.2s;
-      position: relative;
-      min-height: 340px;
-    }
-    .card h2 {
-      color: #5f27cd;
-      font-size: 1.3em;
-      margin: 0 0 0.6em 0;
-      text-align: center;
-    }
-    .card .question {
-      color: #222;
-      font-size: 1.05em;
-      text-align: center;
-      margin-bottom: 1.2em;
-    }
-    .card .hint-list {
-      margin: 0.7em 0 0.5em 0;
-      padding: 0;
-      list-style: none;
-    }
-    .card .hint {
-      background: #b5ead7aa;
-      color: #222;
-      border-radius: 0.6em;
-      padding: 0.3em 0.7em;
-      margin-bottom: 0.4em;
-      font-size: 0.98em;
-      box-shadow: 0 1px 4px #b5ead7aa;
-      animation: fadeIn 0.5s;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px);}
-      to { opacity: 1; transform: translateY(0);}
-    }
-    .card .reveal-btn {
-      margin-top: 1.2em;
-      padding: 0.7em 1.7em;
-      font-size: 1.1em;
-      font-weight: bold;
-      border: none;
-      border-radius: 1.2em;
-      color: #fff;
-      background: linear-gradient(90deg, #5f27cd 40%, #43c6ac 100%);
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 2px 10px #43c6ac55;
-      outline: none;
-    }
-    .card .reveal-btn:before {
-      content: "";
-      position: absolute;
-      left: -60%;
-      top: 0;
-      height: 100%;
-      width: 60%;
-      background: linear-gradient(120deg, transparent, #fff8 60%, transparent 100%);
-      transform: skewX(-20deg);
-      animation: shimmer 2s infinite;
-    }
-    @keyframes shimmer {
-      0% { left: -60%; }
-      100% { left: 120%; }
-    }
-    .card .reveal-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    .card .station-shimmer {
-      font-size: 2em;
-      font-weight: 900;
-      margin: 1em 0 0.2em 0;
-      background: linear-gradient(90deg, #5f27cd 20%, #43c6ac 50%, #b5ead7 80%);
-      background-size: 200% 100%;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: shimmerText 1.2s linear infinite;
-      display: none;
-    }
-    @keyframes shimmerText {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-    .card .station-name {
-      font-size: 2em;
-      font-weight: 900;
-      color: #43c6ac;
-      margin: 1em 0 0.2em 0;
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.7s, transform 0.7s;
-      letter-spacing: 1px;
-    }
-    .card .station-name.revealed {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .card .points {
-      font-weight: bold;
-      color: #5f27cd;
-      margin-top: 0.7em;
-      min-height: 1.2em;
-    }
-    .card .hint-btn {
-      background: #f7b731;
-      color: #fff;
-      border: none;
-      border-radius: 1em;
-      padding: 0.5em 1.2em;
-      margin-top: 0.5em;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 1em;
-      box-shadow: 0 1px 6px #f7b73155;
-      transition: background 0.2s;
-    }
-    .card .hint-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    #final-results {
-      background: #fff;
-      border-radius: 1.2em;
-      padding: 2em 2em 1em 2em;
-      box-shadow: 0 2px 16px #b5ead7cc;
-      color: #5f27cd;
-      font-size: 1.3em;
-      text-align: center;
-      max-width: 450px;
-      margin: 0 auto 2em auto;
-      display: none;
-    }
-    #final-results.show { display: block; }
-    #restart-btn {
-      margin-top: 1em;
-      background: #43c6ac;
-      color: #fff;
-      border: none;
-      border-radius: 1em;
-      padding: 0.7em 1.5em;
-      font-size: 1em;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 1px 6px #43c6ac55;
-    }
-    @media (max-width: 600px) {
-      .cards { grid-template-columns: 1fr; }
-      .card { min-height: 350px; }
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quiz Radios Françaises - Jeu par équipes</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap');
+  body {
+    font-family: 'Inter', Arial, sans-serif;
+    background: linear-gradient(-45deg, #ffe7ba 0%, #b5ead7 50%, #c7ceea 100%);
+    min-height: 100vh;
+    margin: 0;
+    padding: 2rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  h1 {
+    color: #5f27cd;
+    margin-bottom: 0.5rem;
+    letter-spacing: 1px;
+    text-shadow: 0 0 10px rgba(0,0,0,0.4);
+  }
+  #scoreboard {
+    display: flex;
+    gap: 3rem;
+    margin-bottom: 2rem;
+    font-weight: bold;
+    font-size: 1.3rem;
+    color: #222;
+    background: #fff3;
+    padding: 0.5em 2em;
+    border-radius: 1em;
+    box-shadow: 0 2px 8px #fff7;
+  }
+  #scoreboard div {
+    flex: 1;
+    text-align: center;
+  }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 2rem;
+    width: 95vw;
+    max-width: 1100px;
+    margin-bottom: 2rem;
+  }
+  .card {
+    background: linear-gradient(135deg, #f9f7f7 60%, #b5ead7 100%);
+    border-radius: 1.2em;
+    box-shadow: 0 2px 16px #b5ead7cc;
+    padding: 2em 1.2em 1.5em 1.2em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    min-height: 400px;
+    transition: transform 0.2s;
+  }
+  .card h2 {
+    color: #5f27cd;
+    font-size: 1.4em;
+    margin: 0 0 0.6em 0;
+    text-align: center;
+    user-select: none;
+  }
+  .card .question {
+    color: #222;
+    font-size: 1.05em;
+    text-align: center;
+    margin-bottom: 1.2em;
+    min-height: 80px;
+  }
+  .card .hint-list {
+    margin: 0.7em 0 0.5em 0;
+    padding: 0;
+    list-style: none;
+  }
+  .card .hint {
+    background: #b5ead7aa;
+    color: #222;
+    border-radius: 0.6em;
+    padding: 0.3em 0.7em;
+    margin-bottom: 0.4em;
+    font-size: 0.98em;
+    box-shadow: 0 1px 4px #b5ead7aa;
+    animation: fadeIn 0.5s;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px);}
+    to { opacity: 1; transform: translateY(0);}
+  }
+  .card .reveal-btn {
+    margin-top: 1.2em;
+    padding: 0.7em 1.7em;
+    font-size: 1.1em;
+    font-weight: bold;
+    border: none;
+    border-radius: 1.2em;
+    color: #fff;
+    background: linear-gradient(90deg, #5f27cd 40%, #43c6ac 100%);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 10px #43c6ac55;
+    outline: none;
+  }
+  .card .reveal-btn:before {
+    content: "";
+    position: absolute;
+    left: -60%;
+    top: 0;
+    height: 100%;
+    width: 60%;
+    background: linear-gradient(120deg, transparent, #fff8 60%, transparent 100%);
+    transform: skewX(-20deg);
+    animation: shimmer 2s infinite;
+  }
+  @keyframes shimmer {
+    0% { left: -60%; }
+    100% { left: 120%; }
+  }
+  .card .reveal-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .card .station-shimmer {
+    font-size: 2em;
+    font-weight: 900;
+    margin: 1em 0 0.2em 0;
+    background: linear-gradient(90deg, #5f27cd 20%, #43c6ac 50%, #b5ead7 80%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmerText 1.2s linear infinite;
+    display: none;
+  }
+  @keyframes shimmerText {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  .card .station-name {
+    font-size: 2em;
+    font-weight: 900;
+    color: #43c6ac;
+    margin: 1em 0 0.2em 0;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.7s, transform 0.7s;
+    letter-spacing: 1px;
+  }
+  .card .station-name.revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .card .points {
+    font-weight: bold;
+    color: #5f27cd;
+    margin-top: 0.7em;
+    min-height: 1.2em;
+  }
+  .card .hint-btn {
+    background: #f7b731;
+    color: #fff;
+    border: none;
+    border-radius: 1em;
+    padding: 0.5em 1.2em;
+    margin-top: 0.5em;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1em;
+    box-shadow: 0 1px 6px #f7b73155;
+    transition: background 0.2s;
+  }
+  .card .hint-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .team-select {
+    margin-top: 1em;
+    display: flex;
+    gap: 1.5em;
+    justify-content: center;
+  }
+  .team-select button {
+    flex: 1;
+    padding: 0.6em 0;
+    font-weight: 700;
+    font-size: 1.1em;
+    border-radius: 1em;
+    border: none;
+    cursor: pointer;
+    color: white;
+    box-shadow: 0 2px 10px rgb(0 0 0 / 0.15);
+    transition: background-color 0.3s ease;
+  }
+  .team-a {
+    background: #ff6b6b;
+  }
+  .team-a:hover:not(:disabled) {
+    background: #e55a5a;
+  }
+  .team-b {
+    background: #1dd1a1;
+  }
+  .team-b:hover:not(:disabled) {
+    background: #17b589;
+  }
+  .team-select button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  #final-results {
+    background: #fff;
+    border-radius: 1.2em;
+    padding: 2em 2em 1em 2em;
+    box-shadow: 0 2px 16px #b5ead7cc;
+    color: #5f27cd;
+    font-size: 1.3em;
+    text-align: center;
+    max-width: 450px;
+    margin: 0 auto 2em auto;
+    display: none;
+  }
+  #final-results.show { display: block; }
+  #restart-btn {
+    margin-top: 1em;
+    background: #43c6ac;
+    color: #fff;
+    border: none;
+    border-radius: 1em;
+    padding: 0.7em 1.5em;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 1px 6px #43c6ac55;
+  }
+  @media (max-width: 600px) {
+    .cards { grid-template-columns: 1fr; }
+    .card { min-height: 420px; }
+  }
+</style>
 </head>
 <body>
-  <h1>Quiz Radios Françaises</h1>
-  <div id="scoreboard">Score : <span id="score">0</span> / <span id="max-score">18</span></div>
-  <div class="cards" id="cards"></div>
-  <div id="final-results">
-    <div id="final-message"></div>
-    <button id="restart-btn">🔄 Rejouer</button>
-  </div>
-  <!-- Un jingle "positive" court, non cartoon -->
-  <audio id="success-sound" src="https://cdn.pixabay.com/audio/2022/07/26/audio_124bfae5df.mp3" preload="auto"></audio>
-  <script>
-    // Questions
-    const stations = [
-      {
-        name: "NRJ",
-        question: "Cette radio française créée en 1981 a pour slogan 'Hit Music Only!' et diffuse principalement des hits actuels.",
-        hints: [
-          "🎵 Son nom est composé de 3 lettres qui sont des initiales",
-          "🔥 Elle organise les NRJ Music Awards chaque année",
-          "📻 Son logo est rouge avec des lettres blanches"
-        ]
-      },
-      {
-        name: "RTL",
-        question: "Cette radio généraliste française, l'une des plus anciennes, diffuse 'Les Grosses Têtes' et a son siège au Luxembourg.",
-        hints: [
-          "📺 Elle a aussi une chaîne de télévision du même nom",
-          "🎭 Laurent Ruquier y anime une émission culte",
-          "🏰 Son nom fait référence à un pays européen"
-        ]
-      },
-      {
-        name: "Europe 1",
-        question: "Cette radio périphérique française diffuse des émissions d'information et de divertissement, avec un logo vert distinctif.",
-        hints: [
-          "🌍 Son nom évoque un continent",
-          "🟢 Son logo est de couleur verte",
-          "📰 Elle est réputée pour ses émissions d'information"
-        ]
-      },
-      {
-        name: "France Inter",
-        question: "Cette radio publique française du groupe Radio France diffuse 'Par Jupiter!' et est connue pour ses programmes culturels variés.",
-        hints: [
-          "🎙️ Elle fait partie du service public",
-          "📻 Son logo est rouge et blanc",
-          "🎧 Elle propose beaucoup de podcasts"
-        ]
-      },
-      {
-        name: "Fun Radio",
-        question: "Cette station française est connue pour ses musiques dance et électro et ses soirées animées.",
-        hints: [
-          "🎧 Son nom évoque le plaisir et la fête",
-          "🔊 Elle diffuse souvent des hits dance",
-          "🎉 Elle organise des événements festifs"
-        ]
-      },
-      {
-        name: "France Bleu",
-        question: "Cette station fait partie du réseau Radio France et couvre les actualités locales et régionales.",
-        hints: [
-          "🌍 Elle est locale et régionale",
-          "🔵 Son logo est bleu",
-          "📰 Elle diffuse beaucoup d'informations locales"
-        ]
-      }
-    ];
-    const maxPointsPerQuestion = 3;
-    const maxScore = stations.length * maxPointsPerQuestion;
+<h1>Quiz Radios Françaises - Jeu par équipes</h1>
+<div id="scoreboard">
+  <div>Équipe A : <span id="score-a">0</span></div>
+  <div>Équipe B : <span id="score-b">0</span></div>
+</div>
+<div class="cards" id="cards"></div>
+<div id="final-results">
+  <div id="final-message"></div>
+  <button id="restart-btn">🔄 Rejouer</button>
+</div>
 
-    // Elements
-    const cardsDiv = document.getElementById('cards');
-    const scoreEl = document.getElementById('score');
-    const maxScoreEl = document.getElementById('max-score');
-    const finalResults = document.getElementById('final-results');
-    const finalMessage = document.getElementById('final-message');
-    const restartBtn = document.getElementById('restart-btn');
-    const successSound = document.getElementById('success-sound');
+<audio id="success-sound" src="https://cdn.pixabay.com/audio/2022/07/26/audio_124bfae5df.mp3" preload="auto"></audio>
 
-    let score = 0;
-    let revealedCount = 0;
-    maxScoreEl.textContent = maxScore;
-
-    function createCard(station, idx) {
-      const card = document.createElement('div');
-      card.className = "card";
-      card.innerHTML = `
-        <h2>Question ${idx+1}</h2>
-        <div class="question">${station.question}</div>
-        <ul class="hint-list"></ul>
-        <button class="hint-btn">💡 Indice</button>
-        <div class="station-shimmer">RÉVÉLATION...</div>
-        <div class="station-name"></div>
-        <div class="points"></div>
-        <button class="reveal-btn">✨ Révéler la station</button>
-      `;
-      const hintBtn = card.querySelector('.hint-btn');
-      const hintList = card.querySelector('.hint-list');
-      const revealBtn = card.querySelector('.reveal-btn');
-      const shimmer = card.querySelector('.station-shimmer');
-      const stationName = card.querySelector('.station-name');
-      const pointsDiv = card.querySelector('.points');
-      let hintsUsed = 0;
-      let revealed = false;
-
-      hintBtn.onclick = () => {
-        if (hintsUsed < station.hints.length) {
-          const hint = document.createElement('li');
-          hint.className = "hint";
-          hint.textContent = station.hints[hintsUsed];
-          hintList.appendChild(hint);
-          hintsUsed++;
-          if (hintsUsed === station.hints.length) hintBtn.disabled = true;
-        }
-      };
-
-      revealBtn.onclick = () => {
-        if (revealed) return;
-        revealed = true;
-        revealBtn.disabled = true;
-        hintBtn.disabled = true;
-        shimmer.style.display = 'block';
-        setTimeout(() => {
-          shimmer.style.display = 'none';
-          stationName.textContent = station.name;
-          stationName.classList.add('revealed');
-          // Calcul des points
-          let pts = Math.max(maxPointsPerQuestion - hintsUsed, 0);
-          pointsDiv.textContent = `Points gagnés : ${pts}`;
-          score += pts;
-          revealedCount++;
-          scoreEl.textContent = score;
-          // Son
-          successSound.currentTime = 0;
-          successSound.play();
-          // Si tout révélé, afficher le résultat
-          if (revealedCount === stations.length) showFinal();
-        }, 1200);
-      };
-      return card;
+<script>
+  const stations = [
+    {
+      name: "NRJ",
+      question: "Cette radio française créée en 1981 a pour slogan 'Hit Music Only!' et diffuse principalement des hits actuels.",
+      hints: [
+        "🎵 Son nom est composé de 3 lettres qui sont des initiales",
+        "🔥 Elle organise les NRJ Music Awards chaque année",
+        "📻 Son logo est rouge avec des lettres blanches"
+      ]
+    },
+    {
+      name: "RTL",
+      question: "Cette radio généraliste française, l'une des plus anciennes, diffuse 'Les Grosses Têtes' et a son siège au Luxembourg.",
+      hints: [
+        "📺 Elle a aussi une chaîne de télévision du même nom",
+        "🎭 Laurent Ruquier y anime une émission culte",
+        "🏰 Son nom fait référence à un pays européen"
+      ]
+    },
+    {
+      name: "Europe 1",
+      question: "Cette radio périphérique française diffuse des émissions d'information et de divertissement, avec un logo blanc et bleu distinctif.",
+      hints: [
+        "🌍 Son nom évoque un continent",
+        "⚪🔵 Son logo est blanc et bleu",
+        "📰 Elle est réputée pour ses émissions d'information"
+      ]
+    },
+    {
+      name: "France Inter",
+      question: "Cette radio publique française du groupe Radio France diffuse 'Par Jupiter!' et est connue pour ses programmes culturels variés.",
+      hints: [
+        "🎙️ Elle fait partie du service public",
+        "📻 Son logo est rouge et blanc",
+        "🎧 Elle propose beaucoup de podcasts"
+      ]
+    },
+    {
+      name: "Fun Radio",
+      question: "Cette station française est connue pour ses musiques dance et électro et ses soirées animées.",
+      hints: [
+        "🎧 Son nom évoque le plaisir et la fête",
+        "🔊 Elle diffuse souvent des hits dance",
+        "🎉 Elle organise des événements festifs"
+      ]
+    },
+    {
+      name: "France Bleu",
+      question: "Cette station fait partie du réseau Radio France et couvre les actualités locales et régionales.",
+      hints: [
+        "🌍 Elle est locale et régionale",
+        "🔵 Son logo est bleu",
+        "📰 Elle diffuse beaucoup d'informations locales"
+      ]
+    },
+    {
+      name: "Boursorama Radio",
+      question: "Cette radio économique française est spécialisée dans l'actualité financière et boursière.",
+      hints: [
+        "💰 Elle est liée à une banque en ligne",
+        "📈 Elle diffuse des analyses financières",
+        "📰 Son audience est composée d'investisseurs"
+      ]
+    },
+    {
+      name: "Radio Classique",
+      question: "Cette station associe musique classique et informations économiques et financières.",
+      hints: [
+        "🎻 Elle diffuse beaucoup de musique classique",
+        "💼 Elle propose des émissions économiques",
+        "📊 Son logo est bleu et blanc"
+      ]
+    },
+    {
+      name: "RMC (Radio Monte Carlo)",
+      question: "Cette radio généraliste privée est connue pour ses débats politiques et ses émissions sportives.",
+      hints: [
+        "🏁 Elle est très suivie pour ses émissions sportives",
+        "📻 Son logo est rouge et noir",
+        "🗣️ Elle propose des débats et interviews politiques"
+      ]
     }
+  ];
 
-    function showFinal() {
-      let ratio = score / maxScore;
-      let level, msg;
-      if (ratio >= 0.75) {
-        level = "Expert";
-        msg = "🎉 Excellent travail ! Vous connaissez très bien les radios françaises.";
-      } else if (ratio >= 0.5) {
-        level = "Intermédiaire";
-        msg = "👏 Bon travail ! Vous avez une bonne connaissance des radios françaises.";
-      } else if (ratio >= 0.25) {
-        level = "Débutant";
-        msg = "🙂 Pas mal ! Un peu plus d'écoute et vous serez expert.";
-      } else {
-        level = "Débutant";
-        msg = "😅 Il faut réécouter les radios françaises pour progresser !";
+  const maxPointsPerQuestion = 3;
+
+  const cardsDiv = document.getElementById('cards');
+  const scoreAEl = document.getElementById('score-a');
+  const scoreBEl = document.getElementById('score-b');
+  const finalResults = document.getElementById('final-results');
+  const finalMessage = document.getElementById('final-message');
+  const restartBtn = document.getElementById('restart-btn');
+  const successSound = document.getElementById('success-sound');
+
+  let scoreA = 0;
+  let scoreB = 0;
+  let revealedCount = 0;
+  const maxScore = stations.length * maxPointsPerQuestion;
+
+  function createCard(station, idx) {
+    const card = document.createElement('div');
+    card.className = "card";
+    card.innerHTML = `
+      <h2>Radio Mystère ${idx+1}</h2>
+      <div class="question"></div>
+      <ul class="hint-list"></ul>
+      <button class="hint-btn">💡 Indice</button>
+      <div class="station-shimmer">RÉVÉLATION...</div>
+      <div class="station-name"></div>
+      <div class="points"></div>
+      <div class="team-select">
+        <button class="team-a" disabled>Équipe A</button>
+        <button class="team-b" disabled>Équipe B</button>
+      </div>
+      <button class="reveal-btn">✨ Révéler la station</button>
+    `;
+    const questionDiv = card.querySelector('.question');
+    const hintBtn = card.querySelector('.hint-btn');
+    const hintList = card.querySelector('.hint-list');
+    const revealBtn = card.querySelector('.reveal-btn');
+    const shimmer = card.querySelector('.station-shimmer');
+    const stationName = card.querySelector('.station-name');
+    const pointsDiv = card.querySelector('.points');
+    const teamAButton = card.querySelector('.team-a');
+    const teamBButton = card.querySelector('.team-b');
+    let hintsUsed = 0;
+    let revealed = false;
+
+    // Question cachée au départ
+    questionDiv.textContent = "";
+
+    hintBtn.onclick = () => {
+      if (hintsUsed < station.hints.length) {
+        const hint = document.createElement('li');
+        hint.className = "hint";
+        hint.textContent = station.hints[hintsUsed];
+        hintList.appendChild(hint);
+        hintsUsed++;
+        if (hintsUsed === station.hints.length) hintBtn.disabled = true;
       }
-      finalMessage.innerHTML = `<strong>Score final : ${score} / ${maxScore}</strong><br>Niveau atteint : <strong>${level}</strong><br><br>${msg}`;
-      finalResults.classList.add('show');
-    }
-
-    restartBtn.onclick = () => {
-      // Reset
-      score = 0;
-      revealedCount = 0;
-      scoreEl.textContent = score;
-      finalResults.classList.remove('show');
-      cardsDiv.innerHTML = '';
-      stations.forEach((station, idx) => {
-        cardsDiv.appendChild(createCard(station, idx));
-      });
-      window.scrollTo({top:0});
     };
 
-    // Initialisation
+    revealBtn.onclick = () => {
+      if (revealed) return;
+      revealed = true;
+      revealBtn.disabled = true;
+      hintBtn.disabled = true;
+      shimmer.style.display = 'block';
+      setTimeout(() => {
+        shimmer.style.display = 'none';
+        stationName.textContent = station.name;
+        stationName.classList.add('revealed');
+        questionDiv.textContent = station.question;
+        pointsDiv.textContent = "";
+        teamAButton.disabled = false;
+        teamBButton.disabled = false;
+        successSound.currentTime = 0;
+        successSound.play();
+      }, 1200);
+    };
+
+    function addPoints(team) {
+      if (!revealed) return;
+      let pts = Math.max(maxPointsPerQuestion - hintsUsed, 0);
+      pointsDiv.textContent = `Points gagnés : ${pts}`;
+      if (team === 'A') {
+        scoreA += pts;
+        scoreAEl.textContent = scoreA;
+      } else {
+        scoreB += pts;
+        scoreBEl.textContent = scoreB;
+      }
+      teamAButton.disabled = true;
+      teamBButton.disabled = true;
+      revealedCount++;
+      if (revealedCount === stations.length) showFinal();
+    }
+
+    teamAButton.onclick = () => addPoints('A');
+    teamBButton.onclick = () => addPoints('B');
+
+    return card;
+  }
+
+  function showFinal() {
+    let total = scoreA + scoreB;
+    let msg;
+    if (scoreA > scoreB) {
+      msg = `🏆 Équipe A gagne avec ${scoreA} points contre ${scoreB} pour l'Équipe B ! Bravo à l'Équipe A !`;
+    } else if (scoreB > scoreA) {
+      msg = `🏆 Équipe B gagne avec ${scoreB} points contre ${scoreA} pour l'Équipe A ! Bravo à l'Équipe B !`;
+    } else {
+      msg = `🤝 Égalité parfaite avec ${scoreA} points chacun ! Bravo aux deux équipes !`;
+    }
+    finalMessage.innerHTML = `
+      <p><strong>Score final :</strong> Équipe A : ${scoreA} - Équipe B : ${scoreB} (Total ${total} / ${maxScore})</p>
+      <p>${msg}</p>
+    `;
+    finalResults.classList.add('show');
+  }
+
+  restartBtn.onclick = () => {
+    scoreA = 0;
+    scoreB = 0;
+    revealedCount = 0;
+    scoreAEl.textContent = scoreA;
+    scoreBEl.textContent = scoreB;
+    finalResults.classList.remove('show');
+    cardsDiv.innerHTML = '';
     stations.forEach((station, idx) => {
       cardsDiv.appendChild(createCard(station, idx));
     });
-  </script>
+    window.scrollTo({top:0});
+  };
+
+  // Initialisation
+  stations.forEach((station, idx) => {
+    cardsDiv.appendChild(createCard(station, idx));
+  });
+</script>
 </body>
 </html>
