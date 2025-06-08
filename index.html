@@ -1,176 +1,415 @@
-                name: "France Inter",
-                question: "Cette radio publique française du groupe Radio France diffuse 'Par Jupiter!' et est connue pour ses programmes culturels variés. Quelle est cette station?",
-                hints: [
-                    "🎙️ Elle fait partie du service public",
-                    "📻 Son logo est rouge et blanc",
-                    "🎧 Elle propose beaucoup de podcasts"
-                ],
-                description: "Radio publique culturelle",
-                difficulty: 3
-            }
-        ];
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quiz des Radios Françaises</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+      min-height: 100vh;
+      color: #f8fafc;
+      margin: 0;
+      padding: 1rem;
+    }
+    .game-card {
+      cursor: pointer;
+      height: 220px;
+      background: rgba(30, 41, 59, 0.8);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 1rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      transition: transform 0.3s ease;
+    }
+    .game-card:hover {
+      transform: translateY(-8px);
+    }
+    .station-name {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.8s ease;
+      background: linear-gradient(135deg, #0ea5e9, #0284c7);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      font-weight: 800;
+      font-size: 2.5rem;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .station-name.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .hint-card {
+      background: linear-gradient(135deg, #475569 0%, #64748b 100%);
+      border-radius: 12px;
+      padding: 1rem;
+      margin: 1rem 0;
+      color: #f8fafc;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.9);
+      backdrop-filter: blur(20px);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal.show {
+      display: flex;
+    }
+    .modal-content {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      border-radius: 20px;
+      max-width: 90%;
+      width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      padding: 2rem;
+      color: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+    .close-modal {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: transparent;
+      border: none;
+      font-size: 1.5rem;
+      color: #f8fafc;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: #0ea5e9;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 1rem 2rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1.1rem;
+      margin: 0 0.5rem;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: #0284c7;
+    }
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background: #f59e0b;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 1rem 2rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1.1rem;
+      margin: 0 0.5rem;
+    }
+    .btn-secondary:hover:not(:disabled) {
+      background: #d97706;
+    }
+    .btn-secondary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="bg-slate-800 rounded-xl p-6 mb-6 text-center">
+      <h1 class="text-4xl font-bold mb-2">🎵 Quiz des Radios Françaises 🎵</h1>
+      <p class="text-slate-300 mb-4">Devinez les stations de radio à partir des questions et indices!</p>
+      <div class="flex justify-center gap-12 mb-4 text-lg font-semibold">
+        <div>Score: <span id="current-score">0</span> / <span id="total-possible">0</span></div>
+        <div>Niveau: <span id="current-level">Débutant</span></div>
+      </div>
+      <div class="w-full bg-slate-700/50 rounded-full h-6 mx-auto max-w-xl">
+        <div id="progress-bar" class="h-6 rounded-full bg-blue-500 text-white font-bold text-sm text-center leading-6" style="width: 0%;">0%</div>
+      </div>
+    </div>
 
-        let currentQuestionIndex = 0;
-        let score = 0;
-        let totalPossible = radioStations.length * 3; // 3 points max par question
-        let revealed = false;
-        let hintsUsed = 0;
+    <!-- Cards container -->
+    <div id="cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <!-- Cards generated by JS -->
+    </div>
 
-        const cardsContainer = document.getElementById('cards-container');
-        const currentScoreEl = document.getElementById('current-score');
-        const totalPossibleEl = document.getElementById('total-possible');
-        const currentLevelEl = document.getElementById('current-level');
-        const progressBar = document.getElementById('progress-bar');
-        const progressText = document.getElementById('progress-text');
-        const finalResults = document.getElementById('final-results');
-        const finalScoreEl = document.getElementById('final-score');
-        const finalTotalEl = document.getElementById('final-total');
-        const finalLevelEl = document.getElementById('final-level');
-        const performanceMessage = document.getElementById('performance-message');
-        const restartGameBtn = document.getElementById('restart-game');
+    <!-- Final results -->
+    <div id="final-results" class="hidden bg-slate-800 rounded-xl p-8 mt-8 text-center text-white max-w-xl mx-auto">
+      <h2 class="text-3xl font-bold mb-4">🎉 Félicitations! 🎉</h2>
+      <p class="mb-4 text-xl">Score Final: <span id="final-score">0</span> / <span id="final-total">0</span></p>
+      <p class="mb-4 text-xl">Niveau atteint: <span id="final-level">Débutant</span></p>
+      <p id="performance-message" class="mb-8 text-lg"></p>
+      <button id="restart-game" class="btn-primary">🔄 Rejouer</button>
+    </div>
+  </div>
 
-        const questionModal = document.getElementById('question-modal');
-        const questionCounter = document.getElementById('question-counter');
-        const questionText = document.getElementById('question-text');
-        const revealStationBtn = document.getElementById('reveal-station-btn');
-        const showHintBtn = document.getElementById('show-hint-btn');
-        const hintsContainer = document.getElementById('hints-container');
-        const stationNameShimmer = document.getElementById('station-name-shimmer');
-        const revealedStationName = document.getElementById('revealed-station-name');
-        const questionScore = document.getElementById('question-score');
-        const pointsEarnedEl = document.getElementById('points-earned');
-        const continueBtn = document.getElementById('continue-btn');
+  <!-- Modal -->
+  <div id="question-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="question-counter" aria-describedby="question-text">
+    <div class="modal-content">
+      <button class="close-modal" aria-label="Fermer la fenêtre">&times;</button>
+      <div class="text-center mb-6">
+        <div id="question-counter" class="text-xl font-bold mb-2"></div>
+        <p id="question-text" class="text-lg text-slate-300"></p>
+      </div>
+      <div class="text-center mb-6">
+        <div id="station-name-shimmer" class="text-3xl font-extrabold text-blue-400 mb-4" style="display:none;">RÉVÉLATION...</div>
+        <h3 id="revealed-station-name" class="station-name"></h3>
+      </div>
+      <div class="flex justify-center mb-6">
+        <button id="reveal-station-btn" class="btn-primary" type="button">✨ Révéler la Station</button>
+        <button id="show-hint-btn" class="btn-secondary" type="button">💡 Indice</button>
+      </div>
+      <div id="hints-container"></div>
+      <div id="question-score" class="hidden text-center mb-6 text-lg font-semibold">
+        Points gagnés: <span id="points-earned">0</span>
+      </div>
+      <div class="text-center">
+        <button id="continue-btn" class="btn-primary hidden" type="button">➡️ Continuer</button>
+      </div>
+    </div>
+  </div>
 
-        function createCard(station, index) {
-            const card = document.createElement('div');
-            card.className = 'game-card header-card p-6 cursor-pointer';
-            card.innerHTML = `
-                <h3 class="text-xl font-semibold mb-2">${station.description}</h3>
-                <p class="text-slate-300">${station.question.substring(0, 80)}...</p>
-            `;
-            card.addEventListener('click', () => openQuestion(index));
-            return card;
-        }
+  <script>
+    const radioStations = [
+      {
+        name: "NRJ",
+        question: "Cette radio française créée en 1981 a pour slogan 'Hit Music Only!' et diffuse principalement des hits actuels. Quelle est cette station?",
+        hints: [
+          "🎵 Son nom est composé de 3 lettres qui sont des initiales",
+          "🔥 Elle organise les NRJ Music Awards chaque année",
+          "📻 Son logo est rouge avec des lettres blanches"
+        ],
+        description: "La radio des hits actuels",
+        difficulty: 2
+      },
+      {
+        name: "RTL",
+        question: "Cette radio généraliste française, l'une des plus anciennes, diffuse 'Les Grosses Têtes' et a son siège au Luxembourg. Quelle est cette station?",
+        hints: [
+          "📺 Elle a aussi une chaîne de télévision du même nom",
+          "🎭 Laurent Ruquier y anime une émission culte",
+          "🏰 Son nom fait référence à un pays européen"
+        ],
+        description: "La radio généraliste historique",
+        difficulty: 1
+      },
+      {
+        name: "Europe 1",
+        question: "Cette radio périphérique française diffuse des émissions d'information et de divertissement, avec un logo vert distinctif. Quelle est cette station?",
+        hints: [
+          "🌍 Son nom évoque un continent",
+          "🟢 Son logo est de couleur verte",
+          "📰 Elle est réputée pour ses émissions d'information"
+        ],
+        description: "Information et divertissement",
+        difficulty: 2
+      },
+      {
+        name: "France Inter",
+        question: "Cette radio publique française du groupe Radio France diffuse 'Par Jupiter!' et est connue pour ses programmes culturels variés. Quelle est cette station?",
+        hints: [
+          "🎙️ Elle fait partie du service public",
+          "📻 Son logo est rouge et blanc",
+          "🎧 Elle propose beaucoup de podcasts"
+        ],
+        description: "Radio publique culturelle",
+        difficulty: 3
+      }
+    ];
 
-        function openQuestion(index) {
-            currentQuestionIndex = index;
-            revealed = false;
-            hintsUsed = 0;
-            questionCounter.textContent = index + 1;
-            questionText.textContent = radioStations[index].question;
-            revealedStationName.textContent = '';
-            stationNameShimmer.style.display = 'none';
-            hintsContainer.innerHTML = '';
-            questionScore.classList.add('hidden');
-            pointsEarnedEl.textContent = '0';
-            continueBtn.classList.add('hidden');
-            revealStationBtn.disabled = false;
-            showHintBtn.disabled = false;
-            questionModal.style.display = 'flex';
-        }
+    let currentQuestionIndex = 0;
+    let score = 0;
+    const totalPossible = radioStations.length * 3;
+    let revealed = false;
+    let hintsUsed = 0;
 
-        function revealStation() {
-            if (revealed) return;
-            revealed = true;
-            stationNameShimmer.style.display = 'block';
-            revealedStationName.classList.remove('revealed');
-            revealStationBtn.disabled = true;
-            showHintBtn.disabled = true;
+    const cardsContainer = document.getElementById('cards-container');
+    const currentScoreEl = document.getElementById('current-score');
+    const totalPossibleEl = document.getElementById('total-possible');
+    const currentLevelEl = document.getElementById('current-level');
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    const finalResults = document.getElementById('final-results');
+    const finalScoreEl = document.getElementById('final-score');
+    const finalTotalEl = document.getElementById('final-total');
+    const finalLevelEl = document.getElementById('final-level');
+    const performanceMessage = document.getElementById('performance-message');
+    const restartGameBtn = document.getElementById('restart-game');
 
-            setTimeout(() => {
-                stationNameShimmer.style.display = 'none';
-                revealedStationName.textContent = radioStations[currentQuestionIndex].name;
-                revealedStationName.classList.add('revealed');
-                calculateScore();
-                questionScore.classList.remove('hidden');
-                continueBtn.classList.remove('hidden');
-            }, 1500);
-        }
+    const questionModal = document.getElementById('question-modal');
+    const questionCounter = document.getElementById('question-counter');
+    const questionText = document.getElementById('question-text');
+    const revealStationBtn = document.getElementById('reveal-station-btn');
+    const showHintBtn = document.getElementById('show-hint-btn');
+    const hintsContainer = document.getElementById('hints-container');
+    const stationNameShimmer = document.getElementById('station-name-shimmer');
+    const revealedStationName = document.getElementById('revealed-station-name');
+    const questionScore = document.getElementById('question-score');
+    const pointsEarnedEl = document.getElementById('points-earned');
+    const continueBtn = document.getElementById('continue-btn');
+    const closeModalBtn = questionModal.querySelector('.close-modal');
 
-        function showHint() {
-            if (hintsUsed >= radioStations[currentQuestionIndex].hints.length) return;
-            const hint = radioStations[currentQuestionIndex].hints[hintsUsed];
-            const hintCard = document.createElement('div');
-            hintCard.className = 'hint-card show';
-            hintCard.textContent = hint;
-            hintsContainer.appendChild(hintCard);
-            hintsUsed++;
-        }
+    function createCard(station, index) {
+      const card = document.createElement('div');
+      card.className = 'game-card';
+      card.innerHTML = `
+        <h3 class="text-xl font-semibold mb-2">${station.description}</h3>
+        <p class="text-slate-300">${station.question.substring(0, 80)}...</p>
+      `;
+      card.addEventListener('click', () => openQuestion(index));
+      return card;
+    }
 
-        function calculateScore() {
-            // 3 points max, minus 1 point per hint used
-            let points = 3 - hintsUsed;
-            if (points < 0) points = 0;
-            pointsEarnedEl.textContent = points;
-            score += points;
-            currentScoreEl.textContent = score;
-            updateProgress();
-        }
+    function openQuestion(index) {
+      currentQuestionIndex = index;
+      revealed = false;
+      hintsUsed = 0;
+      questionCounter.textContent = `Question ${index + 1} / ${radioStations.length}`;
+      questionText.textContent = radioStations[index].question;
+      revealedStationName.textContent = '';
+      stationNameShimmer.style.display = 'none';
+      hintsContainer.innerHTML = '';
+      questionScore.classList.add('hidden');
+      pointsEarnedEl.textContent = '0';
+      continueBtn.classList.add('hidden');
+      revealStationBtn.disabled = false;
+      showHintBtn.disabled = false;
+      questionModal.classList.add('show');
+      // Focus on reveal button for accessibility
+      revealStationBtn.focus();
+    }
 
-        function updateProgress() {
-            const percent = Math.round((score / totalPossible) * 100);
-            progressBar.style.width = percent + '%';
-            progressText.textContent = percent + '%';
-            updateLevel();
-        }
+    function revealStation() {
+      if (revealed) return;
+      revealed = true;
+      stationNameShimmer.style.display = 'block';
+      revealedStationName.classList.remove('revealed');
+      revealStationBtn.disabled = true;
+      showHintBtn.disabled = true;
 
-        function updateLevel() {
-            let level = 'Débutant';
-            if (score >= totalPossible * 0.75) {
-                level = 'Expert';
-            } else if (score >= totalPossible * 0.5) {
-                level = 'Intermédiaire';
-            }
-            currentLevelEl.textContent = level;
-        }
+      setTimeout(() => {
+        stationNameShimmer.style.display = 'none';
+        revealedStationName.textContent = radioStations[currentQuestionIndex].name;
+        revealedStationName.classList.add('revealed');
+        calculateScore();
+        questionScore.classList.remove('hidden');
+        continueBtn.classList.remove('hidden');
+        continueBtn.focus();
+      }, 1500);
+    }
 
-        continueBtn.addEventListener('click', () => {
-            questionModal.style.display = 'none';
-            if (currentQuestionIndex + 1 < radioStations.length) {
-                openQuestion(currentQuestionIndex + 1);
-            } else {
-                showFinalResults();
-            }
-        });
+    function showHint() {
+      if (hintsUsed >= radioStations[currentQuestionIndex].hints.length) return;
+      const hint = radioStations[currentQuestionIndex].hints[hintsUsed];
+      const hintCard = document.createElement('div');
+      hintCard.className = 'hint-card';
+      hintCard.textContent = hint;
+      hintsContainer.appendChild(hintCard);
+      hintsUsed++;
+    }
 
-        revealStationBtn.addEventListener('click', revealStation);
-        showHintBtn.addEventListener('click', showHint);
+    function calculateScore() {
+      let points = 3 - hintsUsed;
+      if (points < 0) points = 0;
+      pointsEarnedEl.textContent = points;
+      score += points;
+      currentScoreEl.textContent = score;
+      updateProgress();
+    }
 
-        restartGameBtn.addEventListener('click', () => {
-            score = 0;
-            currentScoreEl.textContent = score;
-            finalResults.classList.add('hidden');
-            cardsContainer.style.display = 'grid';
-            updateProgress();
-        });
+    function updateProgress() {
+      const percent = Math.round((score / totalPossible) * 100);
+      progressBar.style.width = percent + '%';
+      progressText.textContent = percent + '%';
+      updateLevel();
+    }
 
-        function showFinalResults() {
-            cardsContainer.style.display = 'none';
-            finalResults.classList.remove('hidden');
-            finalScoreEl.textContent = score;
-            finalTotalEl.textContent = totalPossible;
-            finalLevelEl.textContent = currentLevelEl.textContent;
-            performanceMessage.textContent = getPerformanceMessage(score / totalPossible);
-        }
+    function updateLevel() {
+      let level = 'Débutant';
+      if (score >= totalPossible * 0.75) level = 'Expert';
+      else if (score >= totalPossible * 0.5) level = 'Intermédiaire';
+      currentLevelEl.textContent = level;
+    }
 
-        function getPerformanceMessage(ratio) {
-            if (ratio >= 0.75) return "Excellent travail! Vous connaissez très bien les radios françaises.";
-            if (ratio >= 0.5) return "Bon travail! Vous avez une bonne connaissance des radios françaises.";
-            if (ratio >= 0.25) return "Pas mal! Un peu plus d'écoute et vous serez expert.";
-            return "Il faut réécouter les radios françaises pour progresser!";
-        }
+    continueBtn.addEventListener('click', () => {
+      questionModal.classList.remove('show');
+      if (currentQuestionIndex + 1 < radioStations.length) {
+        openQuestion(currentQuestionIndex + 1);
+      } else {
+        showFinalResults();
+      }
+    });
 
-        // Initialisation
-        function init() {
-            totalPossibleEl.textContent = totalPossible;
-            radioStations.forEach((station, index) => {
-                const card = createCard(station, index);
-                cardsContainer.appendChild(card);
-            });
-            updateProgress();
-        }
+    revealStationBtn.addEventListener('click', revealStation);
+    showHintBtn.addEventListener('click', showHint);
 
-        init();
-    </script>
+    restartGameBtn.addEventListener('click', () => {
+      score = 0;
+      currentScoreEl.textContent = score;
+      finalResults.classList.add('hidden');
+      cardsContainer.style.display = 'grid';
+      updateProgress();
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+      questionModal.classList.remove('show');
+    });
+
+    // Close modal on Escape key
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && questionModal.classList.contains('show')) {
+        questionModal.classList.remove('show');
+      }
+    });
+
+    function showFinalResults() {
+      cardsContainer.style.display = 'none';
+      finalResults.classList.remove('hidden');
+      finalScoreEl.textContent = score;
+      finalTotalEl.textContent = totalPossible;
+      finalLevelEl.textContent = currentLevelEl.textContent;
+      performanceMessage.textContent = getPerformanceMessage(score / totalPossible);
+      restartGameBtn.focus();
+    }
+
+    function getPerformanceMessage(ratio) {
+      if (ratio >= 0.75) return "Excellent travail! Vous connaissez très bien les radios françaises.";
+      if (ratio >= 0.5) return "Bon travail! Vous avez une bonne connaissance des radios françaises.";
+      if (ratio >= 0.25) return "Pas mal! Un peu plus d'écoute et vous serez expert.";
+      return "Il faut réécouter les radios françaises pour progresser!";
+    }
+
+    function init() {
+      totalPossibleEl.textContent = totalPossible;
+      radioStations.forEach((station, index) => {
+        const card = createCard(station, index);
+        cardsContainer.appendChild(card);
+      });
+      updateProgress();
+    }
+
+    init();
+  </script>
 </body>
 </html>
