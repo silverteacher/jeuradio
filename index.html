@@ -36,6 +36,11 @@
       display: block;
       margin-bottom: 0.75rem;
       cursor: pointer;
+      font-size: 1.1rem;
+    }
+    input[type="radio"] {
+      margin-right: 0.5rem;
+      cursor: pointer;
     }
     button {
       background: #3B82F6;
@@ -127,7 +132,8 @@
         `;
         answersForm.appendChild(label);
       });
-      submitBtn.textContent = currentQuestionIndex === quizData.length -1 ? "Terminer" : "Valider";
+      submitBtn.textContent = currentQuestionIndex === quizData.length - 1 ? "Terminer" : "Valider";
+      scoreContainer.textContent = '';
     }
 
     function showScore() {
@@ -138,7 +144,10 @@
     submitBtn.addEventListener('click', (e) => {
       e.preventDefault();
       const selected = answersForm.answer.value;
-      if (selected === undefined) return alert("Veuillez sélectionner une réponse.");
+      if (selected === undefined) {
+        alert("Veuillez sélectionner une réponse.");
+        return;
+      }
       if (parseInt(selected) === quizData[currentQuestionIndex].correct) {
         score++;
         successSound.currentTime = 0;
@@ -152,7 +161,7 @@
       }
     });
 
-    // Initial load
+    // Démarrage
     loadQuestion();
   </script>
 </body>
