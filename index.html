@@ -54,7 +54,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-height: 400px;
+    min-height: 410px;
     position: relative;
   }
   .card h2 {
@@ -63,6 +63,17 @@
     margin: 0 0 0.5em 0;
     text-align: center;
     user-select: none;
+  }
+  .card .first-hint {
+    background: #43c6ac;
+    color: #fff;
+    border-radius: 1em;
+    padding: 0.4em 1em;
+    font-size: 1em;
+    font-weight: 700;
+    margin-bottom: 0.7em;
+    text-align: center;
+    box-shadow: 0 1px 6px #43c6ac44;
   }
   .card .question {
     color: #222;
@@ -315,12 +326,12 @@
       ]
     },
     {
-      name: "Boursorama Radio",
-      question: "Cette radio économique française est spécialisée dans l'actualité financière et boursière.",
+      name: "BFM",
+      question: "Cette radio d'information économique et générale diffuse en continu et appartient au groupe RMC BFM.",
       hints: [
-        "💰 Elle est liée à une banque en ligne",
-        "📈 Elle diffuse des analyses financières",
-        "📰 Son audience est composée d'investisseurs"
+        "💹 Elle traite de l'économie, de la bourse et des entreprises",
+        "📻 Elle est aussi disponible en TV et en streaming",
+        "🗞️ Son logo est bleu et blanc"
       ]
     },
     {
@@ -363,6 +374,7 @@
     card.className = "card";
     card.innerHTML = `
       <h2>Radio Mystère ${idx + 1}</h2>
+      <div class="first-hint">${station.hints[0]}</div>
       <div class="question"></div>
       <ul class="hint-list"></ul>
       <button class="hint-btn">💡 Indice</button>
@@ -389,7 +401,7 @@
     const stationName = card.querySelector('.station-name');
     const pointsDiv = card.querySelector('.points');
     const teamInputs = card.querySelectorAll('input[type="radio"]');
-    let hintsUsed = 0;
+    let hintsUsed = 1; // Premier indice déjà affiché
     let revealed = false;
 
     questionDiv.textContent = "";
