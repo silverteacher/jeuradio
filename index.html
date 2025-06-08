@@ -1,0 +1,176 @@
+                name: "France Inter",
+                question: "Cette radio publique française du groupe Radio France diffuse 'Par Jupiter!' et est connue pour ses programmes culturels variés. Quelle est cette station?",
+                hints: [
+                    "🎙️ Elle fait partie du service public",
+                    "📻 Son logo est rouge et blanc",
+                    "🎧 Elle propose beaucoup de podcasts"
+                ],
+                description: "Radio publique culturelle",
+                difficulty: 3
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let totalPossible = radioStations.length * 3; // 3 points max par question
+        let revealed = false;
+        let hintsUsed = 0;
+
+        const cardsContainer = document.getElementById('cards-container');
+        const currentScoreEl = document.getElementById('current-score');
+        const totalPossibleEl = document.getElementById('total-possible');
+        const currentLevelEl = document.getElementById('current-level');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const finalResults = document.getElementById('final-results');
+        const finalScoreEl = document.getElementById('final-score');
+        const finalTotalEl = document.getElementById('final-total');
+        const finalLevelEl = document.getElementById('final-level');
+        const performanceMessage = document.getElementById('performance-message');
+        const restartGameBtn = document.getElementById('restart-game');
+
+        const questionModal = document.getElementById('question-modal');
+        const questionCounter = document.getElementById('question-counter');
+        const questionText = document.getElementById('question-text');
+        const revealStationBtn = document.getElementById('reveal-station-btn');
+        const showHintBtn = document.getElementById('show-hint-btn');
+        const hintsContainer = document.getElementById('hints-container');
+        const stationNameShimmer = document.getElementById('station-name-shimmer');
+        const revealedStationName = document.getElementById('revealed-station-name');
+        const questionScore = document.getElementById('question-score');
+        const pointsEarnedEl = document.getElementById('points-earned');
+        const continueBtn = document.getElementById('continue-btn');
+
+        function createCard(station, index) {
+            const card = document.createElement('div');
+            card.className = 'game-card header-card p-6 cursor-pointer';
+            card.innerHTML = `
+                <h3 class="text-xl font-semibold mb-2">${station.description}</h3>
+                <p class="text-slate-300">${station.question.substring(0, 80)}...</p>
+            `;
+            card.addEventListener('click', () => openQuestion(index));
+            return card;
+        }
+
+        function openQuestion(index) {
+            currentQuestionIndex = index;
+            revealed = false;
+            hintsUsed = 0;
+            questionCounter.textContent = index + 1;
+            questionText.textContent = radioStations[index].question;
+            revealedStationName.textContent = '';
+            stationNameShimmer.style.display = 'none';
+            hintsContainer.innerHTML = '';
+            questionScore.classList.add('hidden');
+            pointsEarnedEl.textContent = '0';
+            continueBtn.classList.add('hidden');
+            revealStationBtn.disabled = false;
+            showHintBtn.disabled = false;
+            questionModal.style.display = 'flex';
+        }
+
+        function revealStation() {
+            if (revealed) return;
+            revealed = true;
+            stationNameShimmer.style.display = 'block';
+            revealedStationName.classList.remove('revealed');
+            revealStationBtn.disabled = true;
+            showHintBtn.disabled = true;
+
+            setTimeout(() => {
+                stationNameShimmer.style.display = 'none';
+                revealedStationName.textContent = radioStations[currentQuestionIndex].name;
+                revealedStationName.classList.add('revealed');
+                calculateScore();
+                questionScore.classList.remove('hidden');
+                continueBtn.classList.remove('hidden');
+            }, 1500);
+        }
+
+        function showHint() {
+            if (hintsUsed >= radioStations[currentQuestionIndex].hints.length) return;
+            const hint = radioStations[currentQuestionIndex].hints[hintsUsed];
+            const hintCard = document.createElement('div');
+            hintCard.className = 'hint-card show';
+            hintCard.textContent = hint;
+            hintsContainer.appendChild(hintCard);
+            hintsUsed++;
+        }
+
+        function calculateScore() {
+            // 3 points max, minus 1 point per hint used
+            let points = 3 - hintsUsed;
+            if (points < 0) points = 0;
+            pointsEarnedEl.textContent = points;
+            score += points;
+            currentScoreEl.textContent = score;
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const percent = Math.round((score / totalPossible) * 100);
+            progressBar.style.width = percent + '%';
+            progressText.textContent = percent + '%';
+            updateLevel();
+        }
+
+        function updateLevel() {
+            let level = 'Débutant';
+            if (score >= totalPossible * 0.75) {
+                level = 'Expert';
+            } else if (score >= totalPossible * 0.5) {
+                level = 'Intermédiaire';
+            }
+            currentLevelEl.textContent = level;
+        }
+
+        continueBtn.addEventListener('click', () => {
+            questionModal.style.display = 'none';
+            if (currentQuestionIndex + 1 < radioStations.length) {
+                openQuestion(currentQuestionIndex + 1);
+            } else {
+                showFinalResults();
+            }
+        });
+
+        revealStationBtn.addEventListener('click', revealStation);
+        showHintBtn.addEventListener('click', showHint);
+
+        restartGameBtn.addEventListener('click', () => {
+            score = 0;
+            currentScoreEl.textContent = score;
+            finalResults.classList.add('hidden');
+            cardsContainer.style.display = 'grid';
+            updateProgress();
+        });
+
+        function showFinalResults() {
+            cardsContainer.style.display = 'none';
+            finalResults.classList.remove('hidden');
+            finalScoreEl.textContent = score;
+            finalTotalEl.textContent = totalPossible;
+            finalLevelEl.textContent = currentLevelEl.textContent;
+            performanceMessage.textContent = getPerformanceMessage(score / totalPossible);
+        }
+
+        function getPerformanceMessage(ratio) {
+            if (ratio >= 0.75) return "Excellent travail! Vous connaissez très bien les radios françaises.";
+            if (ratio >= 0.5) return "Bon travail! Vous avez une bonne connaissance des radios françaises.";
+            if (ratio >= 0.25) return "Pas mal! Un peu plus d'écoute et vous serez expert.";
+            return "Il faut réécouter les radios françaises pour progresser!";
+        }
+
+        // Initialisation
+        function init() {
+            totalPossibleEl.textContent = totalPossible;
+            radioStations.forEach((station, index) => {
+                const card = createCard(station, index);
+                cardsContainer.appendChild(card);
+            });
+            updateProgress();
+        }
+
+        init();
+    </script>
+</body>
+</html>
